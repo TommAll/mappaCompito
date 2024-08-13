@@ -1,15 +1,14 @@
-window.onload = async()=>
-{
-    let mappa=document.getElementById("map"); 
+window.onload = async () => {
+    let mappa = document.getElementById("map");
     let comuni;
     let dati;
-
+    let infoComuni=[];
 
 
     let promise = await fetch("https://axqvoqvbfjpaamphztgd.functions.supabase.co/comuni?format=json&onlyname=true");
-    dati=await promise.json()
-    comuni=estraiComuni(dati);
-    console.log(comuni); 
+    dati = await promise.json()
+    comuni = estraiComuni(dati);
+    console.log(comuni);
 
     let coord = [parseFloat("12.4963655"), parseFloat("41.9027835")];
 
@@ -33,55 +32,58 @@ window.onload = async()=>
         })
     });
 
-    const marker=new ol.layer.Vector({
-        source: new ol.source.Vector({
-            features:[
-                new ol.Feature({
-                    geometry: new ol.geom.Point(
-                        ol.proj.fromLonLat([12.4963655,41.9027835])
-                    )
+    for (let i = 0; i < 15; i++) {
+
+        let promise = await fetch(`https://nominatim.openstreetmap.org/search?format=json&city=${comuni[i]}`);
+        infoComuni.push(await promise.json())
+        console.log(infoComuni[i])
+        
+        const marker = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [
+                    new ol.Feature({
+                        geometry: new ol.geom.Point(
+                            ol.proj.fromLonLat([parseFloat(infoComuni[i][0].lon), parseFloat(infoComuni[i][0].lat)])
+                        )
+                    })
+                ]
+            }),
+            style: new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: 'icona (1).png'
                 })
-            ]
-        }),
-        style: new ol.style.Style({
-            image: new ol.style.Icon({
-                src:'icona (1).png'
             })
         })
-    })
-    map.addLayer(marker)
+        map.addLayer(marker)
+        
+    }
 
 
-    
-    
+
+
+
+
 }
 
-function estraiComuni(dati)
-{
-    let ris=[];
-    let num=0; 
+function estraiComuni(dati) {
+    let ris = [];
+    let num = 0;
 
-    for(let i=0;i<15;i++)
-    {
-        num=Math.floor(Math.random()*((dati.length-1)-0)+0)
+    for (let i = 0; i < 15; i++) {
+        num = Math.floor(Math.random() * ((dati.length - 1) - 0) + 0)
 
-        if(i==0)
-        {
+        if (i == 0) {
             ris.push(dati[num])
-        }else if(controlla(dati[num],ris))
-        {
+        } else if (controlla(dati[num], ris)) {
             ris.push(dati[num])
         }
     }
     return ris;
 }
 
-function controlla(com,vet)
-{
-    for(let i=0;i<vet.length;i++)
-    {
-        if(vet[i]==com)
-        {
+function controlla(com, vet) {
+    for (let i = 0; i < vet.length; i++) {
+        if (vet[i] == com) {
             return false;
         }
     }
